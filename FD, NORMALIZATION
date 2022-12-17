@@ -1,0 +1,157 @@
+1 TABLE: reservation
+reservation_id-> reader_id, book_id, reservation_date, rsrv_status_id
+2 TABLE: book_category
+book_id->category_name
+3 TABLE: person
+person_id->place_of_work
+4 TABLE: author
+author_id->first_name, last_name
+5 TABLE: reader_inf
+reader_id-> book_id, last_name, first_name, status_id, joined_date, issued_by
+6 TABLE: reader_phone_number
+reader_id->phone_number
+7 TABLE: loan
+loan_id->book_id, reader_id, returned_date, loan_date
+8 TABLE: fine
+fine_id-> fine_date, reader_id, fine_amount, loan_id
+9 TABLE: fine_payment
+payment_id -> , payment_date, reader_id, payment_amount
+10 TABLE: reservation_status 
+status_id->value
+11 TABLE: staff_contacts
+staff_id -> telephone, city, address
+12 TABLE:author_book
+author_id->book_id
+book_id->author_id
+13 TABLE: student
+student_id->place_of_study, year_of_graduate, gender, student_class, student_name, student_surname
+14 TABLE:member_status
+m_status_id->value
+15 TABLE:book_inf
+book_id-> shelf_id, book_title, language, copies
+16 TABLE:staff
+staff_id -> staff_name, gender
+17 TABLE:shelf
+shelf_id->floor, bookshelf
+18 TABLE:data_of_receipt
+Book_id->come_date
+19 TABLE:blacklist
+Reader_id->delete_date
+20 TABLE: archive 
+Reader_name->reader_surname, book_title, joined_date
+
+
+
+NORMAZILATION
+1 TABLE: reservation
+reservation_id->book_id, reader_id, reservation_date, rsrv_status_id
+Old Scheme: { reservation_id ,book_id, reader_id, reservation_date, rsrv_status_id}
+2 NF New Scheme: { reservation_id, reservation_date, rsrv_status_id }
+New Scheme: { reservation_id, book_id, reader_id }
+3 NF: reservation_id-> rsrv_status_id ,  rsrv_status_id-> reservation_date
+reader_id-> book_id, book_id-> reservation_id
+BCNF: reservation_id-> rsrv_status_id ,  rsrv_status_id-> reservation_date,DURATION
+reader_id-> book_id, book_id-> reservation_id, FOR HOW MANY DAYS
+
+4 TABLE: author
+author_id->first_name, last_name
+Old Scheme: { author_id, first_name, last_name }
+2 NF New Scheme:{ author_id, first_name } 
+New Scheme: { author_id, last_name }
+
+5 TABLE: reader_inf
+reader_id-> book_id, last_name, first_name, status_id, joined_date, issued_by
+Old Scheme: { reader_id, book_id, last_name, first_name, status_id, joined_date, issued_by}
+2 NF New Scheme:{ reader_id, book_id, last_name, first_name } 
+New Scheme: { reader_id, status_id, joined_date, issued_by }
+3 NF: reader_id->book_id, book_id-> last_name, first_name
+reader_id->status_id, status_id-> joined_date, issued_by
+BCNF: reader_id->book_id, book_id-> last_name, first_name, UNIVERSITY EMAIL
+reader_id->status_id, status_id-> joined_date, issued_by, HAVE A FINE?
+
+
+
+7 TABLE: loan
+loan_id->book_id, reader_id, returned_date, loan_date
+Old Scheme: { loan_id, book_id, reader_id, returned_date, loan_date}
+2 NF New Scheme:{ loan_id, reader_id } 
+New Scheme: { loan_id, book_id, returned_date, loan_date }
+3 NF: loan_id-> book_id, returned_date, returned_date->loan_date
+BCNF: loan_id-> book_id, returned_date, returned_date->loan_date, HOW MANY DAY LOAN
+
+8 TABLE: fine
+fine_id-> fine_date, reader_id, fine_amount, loan_id
+Old Scheme: { fine_id, fine_date, reader_id, fine_amount, loan_id}
+2 NF New Scheme: { fine_id, fine_date, fine_amount } 
+New Scheme: { fine_id, reader_id, loan_id}
+3 NF: fine_id->fine_date, fine_date ->fine_amount
+fine_id->reader_id, fine_id->loan_id
+BCNF: fine_id->fine_date, fine_date ->fine_amount, PHONE NUMBER
+fine_id->reader_id, fine_id->loan_id, LOAN_DATE
+
+
+9 TABLE: fine_payment
+payment_id ->  payment_date, reader_id, payment_amount
+Old Scheme: { payment_id, payment_date, reader_id, payment_amount}
+2 NF New Scheme:{payment_id, payment_date, payment_amount } 
+New Scheme: { payment_id, reader_id }
+3 NF: payment_id->payment_date, payment_date->payment_amount
+BCNF: payment_id->payment_date, payment_date->payment_amount, BONUS
+
+
+11 TABLE: staff_contacts
+staff_id -> telephone, city, address
+Old Scheme: { staff_id, telephone, city, address}
+2 NF New Scheme:{ staff_id, telephone } 
+New Scheme: { staff_id, city, address }
+3 NF: staff_id->city, city->address
+BCNF: staff_id->city, city->address, INDEX
+
+
+
+13 TABLE: student
+student_id->place_of_study, year_of_graduate, gender, student_class, student_name, student_surname
+Old Scheme: { student_id,place_of_study, year_of_graduate, gender, student_class, student_name, student_surname}
+2 NF New Scheme:{ student_id, place_of_study, year_of_graduate, student_class} 
+New Scheme: { student_id, student_name, student_surname, gender}
+3NF: student_id->place_of_study, year_of_graduate, year_of_graduate->student_class;
+student_id->student_name, student_surname, student_id->gender
+BCNF: student_id->place_of_study, year_of_graduate, year_of_graduate->student_class, DEGREE
+student_id->student_name, student_surname, STUDENT_EMAIL, student_id->gender
+
+
+15 TABLE:book_inf
+book_id-> shelf_id, book_title, language, copies
+Old Scheme: { book_id, shelf_id, book_title, language, copies}
+2 NF New Scheme:{ book_id, shelf_id, copies } 
+New Scheme: { book_id , book_title, language }
+3 NF: book_id->shelf_id, book_id-> copies
+book_id->book_title, book_title->language
+BCNF: book_id->shelf_id,NUMBER_OF_SHELF, book_id-> copies
+book_id->book_title, book_title->language, NUMBER PAGE
+
+16 TABLE:staff
+staff_id -> staff_name, gender
+Old Scheme: { staff_id, staff_name, gender}
+2 NF New Scheme:{ staff_id, staff_name } 
+New Scheme: { staff_name, gender }
+
+17 TABLE:shelf
+shelf_id->floor, bookshelf
+Old Scheme: { shelf_id, floor, bookshelf}
+2 NF New Scheme:{ shelf_id, bookshelf } 
+New Scheme: {floor, bookshelf }
+
+20 TABLE: archive 
+Reader_name->reader_surname, book_title, joined_date
+Old Scheme: { reader_name, reader_surname, book_title, joined_date}
+2 NF New Scheme:{ reader_name, reader_surname } 
+New Scheme: { reader_name, book_title, joined_date }
+3 NF: reader_name-> book_title, book_title->joined_date
+BCNF: reader_name-> book_title, book_title->joined_date, ISSUED DATE
+
+
+
+
+
+
