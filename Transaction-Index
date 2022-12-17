@@ -1,0 +1,27 @@
+INDEX
+
+CREATE INDEX AUTHORS ON AUTHOR(FIRSTNAME,LASTNAME);
+SHOW INDEX FROM author;
+
+CREATE INDEX TITLES ON BOOK_INF(BOOK_TITLE);
+SHOW INDEX FROM book_inf;
+
+CREATE INDEX all_copies on book_inf(copies);
+SHOW INDEX FROM all_copies;
+
+
+TRANSACTION
+
+START TRANSACTION;
+SELECT * FROM author;
+insert into fine select row_number() over(), reader_id, loan_id, now(), 5000 from loan where datediff(now(), loan_date) > 7;
+COMMIT;
+
+START TRANSACTION;
+DELETE FROM reader_inf WHERE reader_id = 100;
+DELETE FROM persona WHERE persona_id = 100;
+COMMIT;
+
+START TRANSACTION;
+INSERT INTO fine_payment values(150, 2022-10-10, 5000)
+COMMIT;
