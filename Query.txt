@@ -5,6 +5,7 @@ FROM book_inf as bi, author_book as ab
 INNER JOIN author as a on a.author_id=ab.author_id 
 JOIN book_category as bc on ab.book_id=bc.book_id
 WHERE bi.book_id=ab.book_id;
+
 2. Where books.
 CREATE VIEW whereBooks AS 
 SELECT bi.book_title,sh.bookshelf, sh.floor, bi.copies, bi.LANGUAGE 
@@ -18,6 +19,7 @@ JOIN student as s on s.student_id=l.reader_id
 WHERE bi.book_id = l.book_id;
 
 4.
+Outputs the number of books that the author has written
 select row_number() over(), book_title 
 from book_inf 
 where book_id IN (SELECT ab.book_id from author_book ab, author a WHERE a.author_id = ab.author_id and a.first_name = 'Wilie' and last_name = 'Stack');
@@ -27,42 +29,52 @@ select FIRST_name, LAST_name, book_title, LANGUAGE
 from book_inf b JOIN reader_inf r
 on b.book_id = r.book_id;
 6.
+Will take the person out of reader
 select r.FIRST_name, r.LAST_name, p.place_of_work
 from reader_inf r, persona p
 where r.reader_id = p.persona_id and r.reader_id in (select persona_id FROM persona);
 7.
+Which staff gave the book to whom at what time
 SELECT s.staff_name, s.gender, r.joined_date, r.FIRST_name, r.LAST_name
 from staff s, reader_inf r
 where s.staff_id = r.issued_by;
 8.
+A list of those who have not returned the book yet?
 SELECT reader_id, FIRST_name, LAST_name
 from reader_inf 
 WHERE EXISTS (SELECT * from loan WHERE returned_date is NULL);
 9.
+I combined the lists of who took the book and who booked
 SELECT re.FIRST_name, re.LAST_name
 from reservation r, reader_inf re
 UNION
 SELECT re.FIRST_name, re.LAST_name
 from loan l, reader_inf re;
 10.
+Shows which book is in which shelf
 SELECT b.book_id, book_title, bookshelf, floor
 from book_inf b join shelf s
 on b.book_id = s.shelf_id;
 11.
+Shows the number of books written by the authors
 select a.first_name, a.last_name, COUNT(ab.book_id) as quantity
 FROM author a, author_book ab
 WHERE a.author_id = ab.author_id
 GROUP BY ab.author_id
 ORDER by quantity;
 12.
+Shows copies of books
 SELECT * FROM book_inf where copies =
 (Select max(copies) from book_inf)
 13.
+Displays the number of gender in staff
 Select gender,count(*) 
 as StaffCount 
 from staff 
 group by gender;
+
 14.
+Will display penalties for readers
 select row_number() over(),r.first_name, r.last_name, f.reader_id, sum(fine_amount) 
 from reader_inf r, fine f
 where f.reader_id = r.reader_id
@@ -76,7 +88,9 @@ where exists
 book_id=b.book_id and book_id =  
 any(select book_id from author_book where author_id=95))
 
-16. SELECT first_name, last_name 
+16. 
+Displays books from the archive that were delivered after this date
+SELECT first_name, last_name 
 from archive 
 where joined_date > 2022-08-02;
 
@@ -132,11 +146,14 @@ Select student_class,gender,count(*)
 as StudentCount from student 
 group by gender,student_class;
 
+23. SELECT * FROM book_inf 
+where copies = (SELECT max(copies) from book_inf)
+
 
 
 INDEX
 
-CREATE INDEX AUTHORS ON AUTHOR(FIRSTNAME,LASTNAME);
+CREATE INDEX AUTHORS ON AUTHOR(FIRST_NAME,LAST_NAME);
 SHOW INDEX FROM author;
 
 CREATE INDEX TITLES ON BOOK_INF(BOOK_TITLE);
@@ -159,5 +176,192 @@ DELETE FROM persona WHERE persona_id = 100;
 COMMIT;
 
 START TRANSACTION;
-INSERT INTO fine_payment values(150, 2022-10-10, 5000)
+INSERT INTO fine_payment values(1, 150, 2022-10-10, 5000)
 COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+ALTER TABLE `author`
+  ADD PRIMARY KEY (`author_id`),
+  ADD KEY `authors` (`first_name`,`last_name`);
+
+
+ALTER TABLE `author_book`
+  ADD KEY `author_id` (`author_id`),
+  ADD KEY `book_id` (`book_id`);
+
+
+ALTER TABLE `book_category`
+  ADD KEY `book_id` (`book_id`);
+
+
+ALTER TABLE `book_inf`
+  ADD PRIMARY KEY (`book_id`),
+  ADD KEY `shelf_id` (`shelf_id`),
+  ADD KEY `TITLES` (`book_title`);
+
+
+ALTER TABLE `fine`
+  ADD PRIMARY KEY (`fine_id`),
+  ADD KEY `reader_id` (`reader_id`),
+  ADD KEY `loan_id` (`loan_id`);
+
+
+ALTER TABLE `fine_payment`
+  ADD PRIMARY KEY (`payment_id`),
+  ADD KEY `reader_id` (`reader_id`);
+
+
+ALTER TABLE `loan`
+  ADD PRIMARY KEY (`loan_id`),
+  ADD KEY `reader_id` (`reader_id`),
+  ADD KEY `book_id` (`book_id`);
+
+
+ALTER TABLE `persona`
+  ADD KEY `persona_id` (`persona_id`);
+
+
+ALTER TABLE `reader_inf`
+  ADD PRIMARY KEY (`reader_id`),
+  ADD KEY `book_id` (`book_id`),
+  ADD KEY `status_id` (`status_id`),
+  ADD KEY `issued_by` (`issued_by`);
+
+
+ALTER TABLE `reader_phone_number`
+  ADD KEY `reader_id` (`reader_id`);
+
+
+ALTER TABLE `reader_status`
+  ADD PRIMARY KEY (`status_id`);
+
+
+ALTER TABLE `reservation`
+  ADD PRIMARY KEY (`reservation_id`),
+  ADD KEY `book_id` (`book_id`),
+  ADD KEY `reader_id` (`reader_id`),
+  ADD KEY `rsrv_status_id` (`rsrv_status_id`);
+
+
+ALTER TABLE `reservation_status`
+  ADD PRIMARY KEY (`status_id`);
+
+ALTER TABLE `shelf`
+  ADD PRIMARY KEY (`shelf_id`);
+
+
+ALTER TABLE `staff`
+  ADD PRIMARY KEY (`staff_id`);
+
+
+ALTER TABLE `staff_contacts`
+  ADD KEY `staff_id` (`staff_id`);
+
+
+ALTER TABLE `student`
+  ADD KEY `student_id` (`student_id`);
+
+
+ALTER TABLE `author`
+  MODIFY `author_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+
+ALTER TABLE `book_inf`
+  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+
+
+ALTER TABLE `fine`
+  MODIFY `fine_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+
+ALTER TABLE `fine_payment`
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+
+
+ALTER TABLE `loan`
+  MODIFY `loan_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+
+ALTER TABLE `reader_inf`
+  MODIFY `reader_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=271;
+
+
+ALTER TABLE `reader_status`
+  MODIFY `status_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+
+ALTER TABLE `reservation`
+  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+
+ALTER TABLE `reservation_status`
+  MODIFY `status_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+
+ALTER TABLE `staff`
+  MODIFY `staff_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+
+ALTER TABLE `author_book`
+  ADD CONSTRAINT `author_book_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `author` (`author_id`),
+  ADD CONSTRAINT `author_book_ibfk_2` FOREIGN KEY (`book_id`) REFERENCES `book_inf` (`book_id`);
+
+
+ALTER TABLE `book_category`
+  ADD CONSTRAINT `book_category_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book_inf` (`book_id`);
+
+
+ALTER TABLE `book_inf`
+  ADD CONSTRAINT `book_inf_ibfk_1` FOREIGN KEY (`shelf_id`) REFERENCES `shelf` (`shelf_id`);
+
+
+ALTER TABLE `fine`
+  ADD CONSTRAINT `fine_ibfk_2` FOREIGN KEY (`reader_id`) REFERENCES `reader_inf` (`reader_id`),
+  ADD CONSTRAINT `fine_ibfk_3` FOREIGN KEY (`loan_id`) REFERENCES `loan` (`loan_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+ALTER TABLE `fine_payment`
+  ADD CONSTRAINT `fine_payment_ibfk_1` FOREIGN KEY (`reader_id`) REFERENCES `reader_inf` (`reader_id`);
+
+
+ALTER TABLE `loan`
+  ADD CONSTRAINT `loan_ibfk_2` FOREIGN KEY (`reader_id`) REFERENCES `reader_inf` (`reader_id`),
+  ADD CONSTRAINT `loan_ibfk_3` FOREIGN KEY (`book_id`) REFERENCES `book_inf` (`book_id`);
+
+
+ALTER TABLE `persona`
+  ADD CONSTRAINT `persona_ibfk_1` FOREIGN KEY (`persona_id`) REFERENCES `reader_inf` (`reader_id`);
+
+
+ALTER TABLE `reader_inf`
+  ADD CONSTRAINT `reader_inf_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book_inf` (`book_id`),
+  ADD CONSTRAINT `reader_inf_ibfk_2` FOREIGN KEY (`status_id`) REFERENCES `reader_status` (`status_id`),
+  ADD CONSTRAINT `reader_inf_ibfk_3` FOREIGN KEY (`issued_by`) REFERENCES `staff` (`staff_id`);
+
+
+ALTER TABLE `reader_phone_number`
+  ADD CONSTRAINT `reader_phone_number_ibfk_1` FOREIGN KEY (`reader_id`) REFERENCES `reader_inf` (`reader_id`);
+
+
+ALTER TABLE `reservation`
+  ADD CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book_inf` (`book_id`),
+  ADD CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`reader_id`) REFERENCES `reader_inf` (`reader_id`),
+  ADD CONSTRAINT `reservation_ibfk_3` FOREIGN KEY (`rsrv_status_id`) REFERENCES `reservation_status` (`status_id`);
+
+
+ALTER TABLE `staff_contacts`
+  ADD CONSTRAINT `staff_contacts_ibfk_1` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`staff_id`);
+
+
+ALTER TABLE `student`
+  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `reader_inf` (`reader_id`);
